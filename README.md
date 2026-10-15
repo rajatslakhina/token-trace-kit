@@ -6,7 +6,7 @@ Your AI feature is now four systems. The tap happens in SwiftUI. The first attem
 
 TokenTrace is a Swift 6 library for the client half of that problem: W3C trace propagation, tail sampling on the device, default-deny redaction, cost attribution per feature, clock-skew correction and a bounded offline export buffer. It has no dependencies and runs on iOS, macOS and Linux.
 
-> **Demo app:** (added after the companion repo is pushed)
+> **Demo app:** [token-trace-demo-app](https://github.com/rajatslakhina/token-trace-demo-app). Tap once and see the tap, the on-device refusal, the proxy and the Claude call as one 5-span waterfall on the server's clock. Then flip *Show without skew correction* and watch the proxy span jump in front of the request that caused it.
 
 ---
 
@@ -105,8 +105,9 @@ It is not an OTLP encoder or an OpenTelemetry SDK replacement. `SpanExporter` is
 
 - **Local (Linux, Swift 6.0.3):** after `rm -rf .build`, `swift build -Xswiftc -warnings-as-errors` succeeds and `swift test` runs **83 tests, 0 failures**.
 - **Mutation checks:** 15 deliberate breaks of load-bearing mechanisms were each applied alone, and every one made at least one test fail. The breaks: refusals not forced; skew offset ignored; cost computed after sampling; a new batch id per retry; sampled evicting forced; the root ending a trace with open children; no flush guard; no `tracestate` force-keep; the highest-delay clock sample trusted; the oldest sample winning ties; Luhn check skipped; Retry-After ignored; `SensitiveText` printing its value; the `random` flag invented for continued traces; lab runs not serialized.
-- **CI:** see the Actions tab (results are written into this section only after the runs report).
-- **Simulator:** the demo app was not yet run at the time of this commit; see the demo repo for what actually happened.
+- **CI ([Actions](https://github.com/rajatslakhina/token-trace-kit/actions)):** two jobs, both green on the v1.0.0 commit. *Linux* (`swift:6.0` container) builds with `-warnings-as-errors` and runs `swift test`. *macOS 15* runs `swift test` (which also compiles the SwiftUI `TokenTraceUI` target) and builds the `TokenTrace-Package` scheme for `generic/platform=iOS Simulator`.
+- **Simulator: not run.** The demo app builds for the iOS Simulator in its own CI, but nobody watched it launch. The unattended run that built it found someone else's work open in Xcode and the Simulator and stopped rather than take them over. Details are in the demo repo.
+- **Independent review:** three rounds. Round 1 found a blocker and round 3 found another (stale skew offset after a wall-clock change; a monotonic clock that pauses during sleep). Both were fixed along with every other finding. Round 3's fixes were **not** re-reviewed independently.
 
 ## Installation
 
